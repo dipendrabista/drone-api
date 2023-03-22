@@ -16,11 +16,14 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Dipendra Bista
@@ -59,7 +62,22 @@ public class DispatcherController {
     public ResponseDTO loadMedication(@Valid @NotNull @RequestBody MedicationLoadRequestDTO medicationLoadRequestDTO) {
         log.info("Load drone {} with medications {}", medicationLoadRequestDTO.getSerialNumber(), medicationLoadRequestDTO.getMedicationCodes());
         return ResponseDTO.builder()
-                .data(droneLoadService.loadMedication(medicationLoadRequestDTO))
+                .data(droneLoadService.loadMedication(medicationLoadRequestDTO)).build();
+    }
+
+    @GetMapping(value = "check-available-drones", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Checking available drones for loading")
+    public ResponseDTO checkAvailableDronesForLoading() {
+        log.info("Retrieving list of available drones for loading ");
+        List<DroneDTO> droneDTOS = droneService.getAvailableDrones();
+        if (CollectionUtils.isEmpty(droneDTOS)) {
+            return ResponseDTO.builder()
+                    .data(Collections.emptyList())
+                    .build();
+        }
+        return ResponseDTO.builder()
+                .data(droneDTOS)
                 .build();
     }
 

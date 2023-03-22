@@ -8,8 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface DroneRepository extends JpaRepository<Drone, String> {
+    List<Drone> findAllByStateInAndBatteryCapacityGreaterThanEqual(List<State> stateList, Double batteryCapacity);
 
     @Modifying
     @Query(value = "update Drone d set d.state = :state where  d.serialNumber= :serialno")

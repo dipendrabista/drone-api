@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,6 +45,18 @@ public class DroneService {
          */
         droneDTO.setState(State.IDLE);
         return droneRepository.saveAndFlush(droneMapper.from(droneDTO));
+    }
+
+    public List<DroneDTO> getAvailableDrones() {
+        log.info("Retrieving list of available drones ");
+        List<State> states = new ArrayList<>();
+        states.add(State.IDLE);
+        states.add(State.LOADED);
+        return droneRepository
+                .findAllByStateInAndBatteryCapacityGreaterThanEqual(states, 25.0)
+                .stream()
+                .filter(drone -> drone.getDroneLoads().stream().mapToDouble(droneLoad -> droneLoad.getMedication().getWeight()).sum() < drone.getWeightLimit())
+                .map(droneMapper::from).collect(Collectors.toList());
     }
 
     public Double findDroneBatteryCapacity(String serialNumber) {
