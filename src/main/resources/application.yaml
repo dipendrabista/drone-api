@@ -15,7 +15,9 @@ spring:
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
-
+#    change scheduler interval as your convinience
+scheduler:
+  interval: 6000
 logging:
   file:
     name: logs/drone_api.log
