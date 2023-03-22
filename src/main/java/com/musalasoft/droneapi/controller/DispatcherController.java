@@ -1,8 +1,10 @@
 package com.musalasoft.droneapi.controller;
 
 import com.musalasoft.droneapi.dto.DroneDTO;
+import com.musalasoft.droneapi.dto.MedicationDTO;
 import com.musalasoft.droneapi.dto.MedicationLoadRequestDTO;
 import com.musalasoft.droneapi.dto.ResponseDTO;
+import com.musalasoft.droneapi.exception.object.ResourceNotFoundException;
 import com.musalasoft.droneapi.service.DroneLoadService;
 import com.musalasoft.droneapi.service.DroneService;
 import io.swagger.annotations.Api;
@@ -63,6 +65,19 @@ public class DispatcherController {
         log.info("Load drone {} with medications {}", medicationLoadRequestDTO.getSerialNumber(), medicationLoadRequestDTO.getMedicationCodes());
         return ResponseDTO.builder()
                 .data(droneLoadService.loadMedication(medicationLoadRequestDTO)).build();
+    }
+
+    @GetMapping(path = "check-loaded-medication", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Checking loaded medication items for a given drone")
+    public ResponseDTO checkLoadedMedication(@NotNull @RequestParam String serialNumber) {
+        log.info("Retrieving list of loaded medication for the given drone {}", serialNumber);
+        List<MedicationDTO> medicationDTOs = droneService.findLoadedMedication(serialNumber);
+        if (CollectionUtils.isEmpty(medicationDTOs))
+            throw new ResourceNotFoundException("Drone is not loaded with any medication");
+        return ResponseDTO.builder()
+                .data(medicationDTOs)
+                .build();
     }
 
     @GetMapping(value = "check-available-drones", produces = "application/json")

@@ -3,7 +3,9 @@ package com.musalasoft.droneapi.service;
 import com.musalasoft.droneapi.constants.AppConstants;
 import com.musalasoft.droneapi.constants.State;
 import com.musalasoft.droneapi.dto.DroneDTO;
+import com.musalasoft.droneapi.dto.MedicationDTO;
 import com.musalasoft.droneapi.dto.mapper.DroneMapper;
+import com.musalasoft.droneapi.dto.mapper.MedicationMapper;
 import com.musalasoft.droneapi.entity.Drone;
 import com.musalasoft.droneapi.exception.object.AlreadyExistException;
 import com.musalasoft.droneapi.repository.DroneRepository;
@@ -23,12 +25,16 @@ public class DroneService {
 
     private DroneRepository droneRepository;
     private DroneMapper droneMapper;
+    private MedicationMapper medicationMapper;
+
 
     public DroneService(DroneRepository droneRepository,
-                        DroneMapper droneMapper
+                        DroneMapper droneMapper,
+                        MedicationMapper medicationMapper
     ) {
         this.droneRepository = droneRepository;
         this.droneMapper = droneMapper;
+        this.medicationMapper = medicationMapper;
     }
 
 
@@ -45,6 +51,21 @@ public class DroneService {
          */
         droneDTO.setState(State.IDLE);
         return droneRepository.saveAndFlush(droneMapper.from(droneDTO));
+    }
+
+    public List<MedicationDTO> findLoadedMedication(String serialNumber) {
+        log.info("Retrieving drone details with serial number {}", serialNumber);
+        Drone droneEntity = getDrone(serialNumber);
+        log.info("Drone Details {}", droneEntity);
+        return droneEntity.getDroneLoads()
+                .stream()
+                .map(droneLoad -> {
+                    MedicationDTO medicationDTO = medicationMapper.from(droneLoad.getMedication());
+                    medicationDTO.setQuantity(droneLoad.getQuantity());
+                    return medicationDTO;
+                })
+                .collect(Collectors.toList());
+
     }
 
     public List<DroneDTO> getAvailableDrones() {
