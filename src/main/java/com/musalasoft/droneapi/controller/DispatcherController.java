@@ -1,7 +1,9 @@
 package com.musalasoft.droneapi.controller;
 
 import com.musalasoft.droneapi.dto.DroneDTO;
+import com.musalasoft.droneapi.dto.MedicationLoadRequestDTO;
 import com.musalasoft.droneapi.dto.ResponseDTO;
+import com.musalasoft.droneapi.service.DroneLoadService;
 import com.musalasoft.droneapi.service.DroneService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -38,6 +41,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor(access = AccessLevel.PACKAGE, onConstructor = @_(@Autowired))
 public class DispatcherController {
     DroneService droneService;
+    DroneLoadService droneLoadService;
 
     @PostMapping(path = "register", consumes = "application/json", produces = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
@@ -46,6 +50,16 @@ public class DispatcherController {
         log.info("Registering  new Drone : ", droneDTO);
         return ResponseDTO.builder()
                 .data(droneService.registerDrone(droneDTO))
+                .build();
+    }
+
+    @PostMapping(path = "load-medication", consumes = "application/json", produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Loading a drone with medication items")
+    public ResponseDTO loadMedication(@Valid @NotNull @RequestBody MedicationLoadRequestDTO medicationLoadRequestDTO) {
+        log.info("Load drone {} with medications {}", medicationLoadRequestDTO.getSerialNumber(), medicationLoadRequestDTO.getMedicationCodes());
+        return ResponseDTO.builder()
+                .data(droneLoadService.loadMedication(medicationLoadRequestDTO))
                 .build();
     }
 
